@@ -12,6 +12,8 @@ from PIL import Image, ImageFilter
 INPUT_PATH = "/Users/sprihapandey/pixel-studio/input_image_2.png"
 OUTPUT_PATH = "/Users/sprihapandey/pixel-studio/output_image_2.png"
 WORKSPACE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(WORKSPACE_DIR, "frontend")
+ASSETS_DIR = os.path.join(WORKSPACE_DIR, "assets")
 PREVIEW_PATH = os.path.join(WORKSPACE_DIR, "output_preview.png")
 
 
@@ -499,15 +501,60 @@ LAST_QUANTIZED_IMAGE = None
 
 
 class PixelArtHandler(BaseHTTPRequestHandler):
+    def _send_file(self, file_path, content_type=None):
+        if not os.path.exists(file_path):
+            self.send_response(404)
+            self.end_headers()
+            return False
+
+        with open(file_path, "rb") as file:
+            content = file.read()
+
+        try:
+            self.send_response(200)
+            if content_type:
+                self.send_header("Content-Type", content_type)
+            else:
+                self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+        except (BrokenPipeError, ConnectionResetError):
+            return False
+
+        return True
+
     def do_GET(self):
         if self.path == "/":
-            body = HTML_PAGE.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            index_path = os.path.join(FRONTEND_DIR, "index.html")
+            self._send_file(index_path, "text/html; charset=utf-8")
             return
+
+        if self.path.startswith("/frontend/"):
+            relative_path = self.path[len("/frontend/") :]
+            full_path = os.path.normpath(os.path.join(FRONTEND_DIR, relative_path))
+            if full_path.startswith(FRONTEND_DIR):
+                content_type = "text/css; charset=utf-8" if relative_path.endswith(".css") else "text/javascript; charset=utf-8" if relative_path.endswith(".js") else "text/html; charset=utf-8"
+                self._send_file(full_path, content_type)
+                return
+
+        if self.path.startswith("/assets/"):
+            relative_path = self.path[len("/assets/") :]
+            full_path = os.path.normpath(os.path.join(ASSETS_DIR, relative_path))
+            if full_path.startswith(ASSETS_DIR):
+                extension = os.path.splitext(relative_path)[1].lower()
+                mime_type = {
+                    ".png": "image/png",
+                    ".jpg": "image/jpeg",
+                    ".jpeg": "image/jpeg",
+                    ".gif": "image/gif",
+                    ".svg": "image/svg+xml",
+                    ".css": "text/css; charset=utf-8",
+                    ".js": "text/javascript; charset=utf-8",
+                    ".txt": "text/plain; charset=utf-8",
+                }.get(extension, "application/octet-stream")
+                self._send_file(full_path, mime_type)
+                return
 
         if self.path.startswith("/preview"):
             global LAST_QUANTIZED_IMAGE
@@ -539,11 +586,14 @@ class PixelArtHandler(BaseHTTPRequestHandler):
             processed.save(image_bytes, format="PNG")
             content = image_bytes.getvalue()
 
-            self.send_response(200)
-            self.send_header("Content-Type", "image/png")
-            self.send_header("Content-Length", str(len(content)))
-            self.end_headers()
-            self.wfile.write(content)
+            try:
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            except (BrokenPipeError, ConnectionResetError):
+                return
             return
 
         if self.path == "/output_preview.png":
