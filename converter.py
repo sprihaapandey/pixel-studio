@@ -5,7 +5,7 @@ import random
 from email.parser import BytesParser
 from email.policy import default
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from PIL import Image, ImageFilter
 
@@ -525,21 +525,23 @@ class PixelArtHandler(BaseHTTPRequestHandler):
         return True
 
     def do_GET(self):
-        if self.path == "/":
+        request_path = urlparse(self.path).path
+
+        if request_path == "/":
             index_path = os.path.join(FRONTEND_DIR, "index.html")
             self._send_file(index_path, "text/html; charset=utf-8")
             return
 
-        if self.path.startswith("/frontend/"):
-            relative_path = self.path[len("/frontend/") :]
+        if request_path.startswith("/frontend/"):
+            relative_path = request_path[len("/frontend/") :]
             full_path = os.path.normpath(os.path.join(FRONTEND_DIR, relative_path))
             if full_path.startswith(FRONTEND_DIR):
                 content_type = "text/css; charset=utf-8" if relative_path.endswith(".css") else "text/javascript; charset=utf-8" if relative_path.endswith(".js") else "text/html; charset=utf-8"
                 self._send_file(full_path, content_type)
                 return
 
-        if self.path.startswith("/assets/"):
-            relative_path = self.path[len("/assets/") :]
+        if request_path.startswith("/assets/"):
+            relative_path = request_path[len("/assets/") :]
             full_path = os.path.normpath(os.path.join(ASSETS_DIR, relative_path))
             if full_path.startswith(ASSETS_DIR):
                 extension = os.path.splitext(relative_path)[1].lower()
@@ -556,14 +558,14 @@ class PixelArtHandler(BaseHTTPRequestHandler):
                 self._send_file(full_path, mime_type)
                 return
 
-        if self.path in ("/preview", "/api/preview"):
+        if request_path in ("/preview", "/api/preview"):
             global LAST_QUANTIZED_IMAGE
             if LAST_QUANTIZED_IMAGE is None:
                 self.send_response(404)
                 self.end_headers()
                 return
 
-            query = self.path.split("?", 1)[-1]
+            query = urlparse(self.path).query
             params = parse_qs(query)
             factor_value = params.get("factor", ["4"])[0]
 
@@ -616,7 +618,8 @@ class PixelArtHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         global LAST_QUANTIZED_IMAGE
 
-        if self.path in ("/upload", "/api/upload"):
+        request_path = urlparse(self.path).path
+        if request_path in ("/upload", "/api/upload"):
             content_length = int(self.headers.get("Content-Length", "0"))
             raw_body = self.rfile.read(content_length)
             form = parse_form_data(self.headers.get("Content-Type", ""), raw_body)
@@ -655,7 +658,7 @@ if __name__ == "__main__":
     args = parse_args()
 
     if args.serve:
-        run_ui(port=args.port)
+        run_ui(host=args.host, port=args.port)
     else:
         img = Image.open(args.input).convert("RGB")
         output_image = pixel_art_pipeline(
