@@ -1,0 +1,12 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "framework": null,
+  "routes": [
+    { "src": "/api/upload", "dest": "/api/upload.py" },
+    { "src": "/api/preview", "dest": "/api/preview.py" },
+    { "src": "/frontend/(.*)", "dest": "/frontend/$1" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

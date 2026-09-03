@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixel Art Converter</title>
+    <link rel="stylesheet" href="/frontend/styles.css" />
+    <style>
+      @font-face {
+        font-family: 'Pixel Emulator';
+        src: url('/assets/pixel-emulator-font/PixelEmulator-xq08.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar panel-wood">
+        <div class="title-wrap">
+          <div class="mini-tag">PIXEL STUDIO</div>
+          <h1>PIXEL ART CONVERTER</h1>
+        </div>
+      </header>
+
+      <main class="app-panel panel-frame">
+        <div class="workspace-panel">
+          <div class="controls-column">
+            <section class="panel-block controls-block panel-wood">
+              <div class="section-label">UPLOAD</div>
+
+              <label class="upload-box" for="imageInput">
+                <input id="imageInput" type="file" name="image" accept="image/*" />
+                <span class="upload-copy">Choose Image</span>
+              </label>
+            </section>
+
+            <section class="panel-block controls-block panel-wood">
+              <div class="section-label-row">
+                <div class="section-label">RESOLUTION</div>
+                <div class="value" id="factorValue">4</div>
+              </div>
+
+              <div class="slider-meta">
+                <span>super detailed</span>
+                <span>super pixel</span>
+              </div>
+
+              <div class="slider-shell">
+                <input id="factorSlider" type="range" min="2" max="50" value="4" />
+              </div>
+            </section>
+
+            <aside class="credit-note panel-wood">
+              <p>Generated images are not created by AI.</p>
+              <p>
+                Assets and fonts: <a href="https://redreeh.itch.io/ui-assetpack" target="_blank" rel="noreferrer">Redreeh UI Asset Pack</a>,
+                <a href="https://dobo-ui.itch.io/cozy-user-interface" target="_blank" rel="noreferrer">Dobo UI Cozy User Interface</a>,
+                and <a href="https://www.fontspace.com/mintsoda-lime-green-font-f92418" target="_blank" rel="noreferrer">Mintsoda Lime Green font</a>.
+              </p>
+            </aside>
+          </div>
+
+          <section class="panel-block preview-block panel-wood">
+            <div class="section-label">PREVIEW</div>
+
+            <div class="preview-frame">
+              <img id="outputImage" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='100%25' height='100%25' fill='%230f172a'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%2394a3b8' font-size='28' font-family='Arial'%3EUpload an image to preview%3C/text%3E%3C/svg%3E" alt="Converted pixel art preview" />
+            </div>
+
+            <div class="preview-actions">
+              <button id="saveButton" class="save-button hidden" type="button">Save Image</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="/frontend/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "pixel-studio",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "python3 converter.py --serve --port 8000",
+    "start": "python3 converter.py --serve --port 8000"
+  }
+}

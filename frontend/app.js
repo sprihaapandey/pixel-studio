@@ -29,7 +29,7 @@ function refreshPreview() {
   }
 
   saveButton.classList.add('hidden');
-  outputImage.src = '/preview?factor=' + factor + '&t=' + Date.now();
+  outputImage.src = '/api/preview?factor=' + factor + '&t=' + Date.now();
 }
 
 function schedulePreview() {
@@ -90,7 +90,7 @@ imageInput.addEventListener('change', function () {
   formData.append('image', imageInput.files[0]);
   setStatus('Uploading and quantizing image...');
 
-  fetch('/upload', {
+  fetch('/api/upload', {
     method: 'POST',
     body: formData
   })
