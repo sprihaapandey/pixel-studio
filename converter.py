@@ -556,7 +556,7 @@ class PixelArtHandler(BaseHTTPRequestHandler):
                 self._send_file(full_path, mime_type)
                 return
 
-        if self.path.startswith("/preview"):
+        if self.path in ("/preview", "/api/preview"):
             global LAST_QUANTIZED_IMAGE
             if LAST_QUANTIZED_IMAGE is None:
                 self.send_response(404)
@@ -616,7 +616,7 @@ class PixelArtHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         global LAST_QUANTIZED_IMAGE
 
-        if self.path == "/upload":
+        if self.path in ("/upload", "/api/upload"):
             content_length = int(self.headers.get("Content-Length", "0"))
             raw_body = self.rfile.read(content_length)
             form = parse_form_data(self.headers.get("Content-Type", ""), raw_body)
@@ -645,20 +645,10 @@ class PixelArtHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-def run_ui(host="127.0.0.1", port=8001):
+def run_ui(host="0.0.0.0", port=8000):
     server = ThreadingHTTPServer((host, port), PixelArtHandler)
     print(f"Pixel art UI running at http://{host}:{port}")
     server.serve_forever()
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="Pixel-art converter with a fixed palette and user-selected scale factor.")
-    parser.add_argument("--input", default=INPUT_PATH, help="Path to the input image.")
-    parser.add_argument("--output", default=OUTPUT_PATH, help="Path for the output image.")
-    parser.add_argument("--factor", type=int, default=4, help="Shared downsample/upscale factor selected by the user.")
-    parser.add_argument("--serve", action="store_true", help="Run the browser UI instead of the command-line conversion.")
-    parser.add_argument("--port", type=int, default=8000, help="Port for the local web UI.")
-    return parser.parse_args()
 
 
 if __name__ == "__main__":
